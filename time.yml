@@ -1,0 +1,149 @@
+groups:
+- name: datetime
+  interval: 30s
+  rules:
+  - record: daily_saving_time_belgium
+    expr: |
+      (vector(0) and (month() < 3 or month() > 10))
+      or
+      (vector(1) and (month() > 3 and month() < 10))
+      or
+      (
+       (
+        (month() %2 and (day_of_month() - day_of_week() > (30 + +month() % 2 - 7)) and day_of_week() > 0)
+       or
+        -1*month()%2+1 and (day_of_month() - day_of_week() <= (30 + month() % 2 - 7))
+       )
+      )
+      or
+      (vector(1) and ((month()==10 and hour() < 1) or (month()==3 and hour() > 0)))
+      or
+      vector(0)
+  - record: belgium_localtime
+    expr: |
+       time() + 3600 + 3600 * daily_saving_time_belgium
+  - record: business_day
+    expr: |
+       vector(1) and day_of_week(belgium_localtime) > 0 and day_of_week(belgium_localtime) < 6 unless count(public_holiday)
+  - record: belgium_hour
+    expr: |
+       hour(belgium_localtime)
+  - record: business_hour
+    expr: |
+       vector(1) and belgium_hour >= 8 < 18 and business_day
+  - record: extended_business_hour
+    expr: |
+       (vector(1) and belgium_hour >= 7 < 20 and business_day)
+  - record: extended_business_hour_sat
+    expr: |
+       extended_business_hour
+       or (vector(1) and belgium_hour >= 7 < 14 and day_of_week(belgium_localtime) == 6 unless count(public_holiday))
+  - record: daylight
+    expr: |
+       vector(1) and belgium_hour >= 8 < 18
+  - record: extended_daylight
+    expr: |
+       vector(1) and belgium_hour >= 7 < 20
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime-86400) == easter_day and month(belgium_localtime-86400) == easter_month
+    labels:
+       name: Easter Monday
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime-40*86400) == easter_day and month(belgium_localtime-40*86400) == easter_month
+    labels:
+       name: Feast of the Ascension
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime-50*86400) == easter_day and month(belgium_localtime-50*86400) == easter_month
+    labels:
+       name: Whit Monday
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 1
+    labels:
+       name: New Year
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 5
+    labels:
+       name: Labour Day
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime) == 21 and month(belgium_localtime) == 7
+    labels:
+       name: Belgian National Day
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime) == 15 and month(belgium_localtime) == 8
+    labels:
+       name: Assumption of Mary
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 11
+    labels:
+       name: All Saints Day
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime) == 11 and month(belgium_localtime) == 11
+    labels:
+       name: Armistice of 11 November 1918
+  - record: public_holiday
+    expr: |
+       vector(1) and day_of_month(belgium_localtime) == 25 and month(belgium_localtime) == 12
+    labels:
+       name: Xmas
+  - alert: Time Window - Night
+    expr: absent(daylight)
+    labels:
+        recipient: none
+  - alert: Time Window - OBH
+    expr: absent(business_hour)
+    labels:
+        recipient: none
+  - alert: Time Window - Extended Night
+    expr: absent(extended_daylight)
+    labels:
+        recipient: none
+  - alert: Time Window - Extended OBH with Saturday
+    expr: absent(extended_business_hour_sat)
+    labels:
+        recipient: none
+  - alert: Time Window - Extended OBH
+    expr: absent(extended_business_hour)
+    labels:
+        recipient: none
+- name: Easter Meeus/Jones/Butcher Algorithm
+  interval: 60s
+  rules:
+    - record: easter_y
+      expr: year(belgium_localtime)
+    - record: easter_a
+      expr: easter_y % 19
+    - record: easter_b
+      expr: floor(easter_y / 100)
+    - record: easter_c
+      expr: easter_y % 100
+    - record: easter_d
+      expr: floor(easter_b / 4)
+    - record: easter_e
+      expr: easter_b % 4
+    - record: easter_f
+      expr: floor((easter_b +8 ) / 25)
+    - record: easter_g
+      expr: floor((easter_b - easter_f + 1 ) / 3)
+    - record: easter_h
+      expr: (19*easter_a + easter_b - easter_d - easter_g + 15 ) % 30
+    - record: easter_i
+      expr: floor(easter_c/4)
+    - record: easter_k
+      expr: easter_c%4
+    - record: easter_l
+      expr: (32 + 2*easter_e + 2*easter_i - easter_h - easter_k) % 7
+    - record: easter_m
+      expr: floor((easter_a + 11*easter_h + 22*easter_l) / 451)
+    - record: easter_month
+      expr: floor((easter_h + easter_l - 7*easter_m + 114) / 31)
+    - record: easter_day
+      expr: ((easter_h + easter_l - 7*easter_m + 114) %31) + 1
