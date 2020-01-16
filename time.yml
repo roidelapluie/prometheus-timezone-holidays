@@ -4,21 +4,32 @@ groups:
   rules:
   - record: daily_saving_time_belgium
     expr: |
+      # If the month is between 10. and 3. month (exclusive), then the saving time adds 0 hours
       (vector(0) and (month() < 3 or month() > 10))
       or
+      # If the month is between 3. and 10. month (exclusive), then the saving time adds 1 hour
       (vector(1) and (month() > 3 and month() < 10))
       or
+      # In this or, summer time is detected if we can derive this information from the day of the month 
       (
-       (
-        (month() %2 and (day_of_month() - day_of_week() > (30 + +month() % 2 - 7)) and day_of_week() > 0)
-       or
-        -1*month()%2+1 and (day_of_month() - day_of_week() <= (30 + month() % 2 - 7))
-       )
+      (
+        # If the month is odd (3. month) and previous sunday in current month is after the 24. day of the month
+        (month() % 2 and (day_of_month() - day_of_week() > (30 + month() % 2 - 7)) and day_of_week() > 0)
+      or
+        # If the month is even (10. month) and previous sunday in current month is before or equal to 23. day of the month
+        -1 * month() % 2 + 1 and (day_of_month() - day_of_week() <= (30 + month() % 2 - 7))
+      )
       )
       or
+      # In this or, summer time is detected (and we know we are in the swithing day)
+      # If it's 10. month, we know the saving time was not switched yet if the hour is less than 01:00 UTC
+      # Also if it's 3. month, we know the saving time was already switched if we have already passed the 01:00 UTC
+      # In both cases, the saving time add 1 hour
       (vector(1) and ((month()==10 and hour() < 1) or (month()==3 and hour() > 0)))
       or
+      # If no previous condition matched, we know it's winter time (it's the day of the switching day)
       vector(0)
+
   - record: belgium_localtime
     expr: |
        time() + 3600 + 3600 * daily_saving_time_belgium
