@@ -1,0 +1,78 @@
+rule_files:
+- test.yml
+
+evaluation_interval: 4m
+
+tests:
+- interval: 1m
+  promql_expr_test:
+
+  # 1970-01-01T12:00 is New Year's day, which is a public holiday
+  - expr: public_holiday
+    eval_time: 12h
+    exp_samples:
+    - labels: '{__name__="public_holiday", name="New Year"}'
+      value: 1
+  # 1970-01-02T12:00 is Friday day, which is not a public holiday
+  - expr: public_holiday
+    eval_time: 36h
+
+  # Business day validation
+
+  # 1970-01-01 is New Year's day, which is not a business day
+  - expr: business_day
+    eval_time: 3h
+  # 1970-01-02 is Friday
+  - expr: business_day
+    eval_time: 24h
+    exp_samples:
+    - labels: '{__name__="business_day"}'
+      value: 1
+  # 1970-01-03 is Saturday
+  - expr: business_day
+    eval_time: 48h
+  # 1970-01-04 is Sunday
+  - expr: business_day
+    eval_time: 72h
+  # 1970-01-05 is Monday
+  - expr: business_day
+    eval_time: 96h
+    exp_samples:
+    - labels: '{__name__="business_day"}'
+      value: 1
+
+  # Business hour validation
+
+  # 1970-01-01T11:00 UTC (12:00 Prague) is New Year's day, which is not a business day
+  - expr: business_hour
+    eval_time: 11h
+  # 1970-01-02T06:00 UTC (07:00 Prague) is Friday, not working hour
+  - expr: business_hour
+    eval_time: 30h
+  # 1970-01-02T07:00 UTC (08:00 Prague) is Friday, working hour
+  - expr: business_hour
+    eval_time: 31h
+    exp_samples:
+    - labels: '{__name__="business_hour"}'
+      value: 1
+  # 1970-01-02T11:00 UTC (12:00 Prague) is Friday, working hour
+  - expr: business_hour
+    eval_time: 35h
+    exp_samples:
+    - labels: '{__name__="business_hour"}'
+      value: 1
+  # 1970-01-02T17:00 UTC (18:00 Prague) is Friday, not working hour
+  - expr: business_hour
+    eval_time: 41h
+  # 1970-01-03T11:00 UTC (12:00 Prague) is Saturday, which is not a business day
+  - expr: business_hour
+    eval_time: 59h
+  # 1970-01-04T11:00 UTC (12:00 Prague) is Sunday, which is not a business day
+  - expr: business_hour
+    eval_time: 81h
+  # 1970-01-04T11:00 UTC (12:00 Prague) is Monday, working hour
+  - expr: business_hour
+    eval_time: 105h
+    exp_samples:
+    - labels: '{__name__="business_hour"}'
+      value: 1
