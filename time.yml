@@ -51,7 +51,7 @@ groups:
        name: Easter Monday
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime-40*86400) == easter_day and month(belgium_localtime-40*86400) == easter_month
+       vector(1) and day_of_month(belgium_localtime-39*86400) == easter_day and month(belgium_localtime-39*86400) == easter_month
     labels:
        name: Feast of the Ascension
   - record: public_holiday
