@@ -2,7 +2,7 @@ groups:
 - name: datetime
   interval: 30s
   rules:
-  - record: daily_saving_time_belgium
+  - record: daylight_saving_time_belgium
     expr: |
       (vector(0) and (month() < 3 or month() > 10))
       or
@@ -21,7 +21,7 @@ groups:
       vector(0)
   - record: belgium_localtime
     expr: |
-       time() + 3600 + 3600 * daily_saving_time_belgium
+       time() + 3600 + 3600 * daylight_saving_time_belgium
   - record: business_day
     expr: |
        vector(1) and day_of_week(belgium_localtime) > 0 and day_of_week(belgium_localtime) < 6 unless count(public_holiday)
