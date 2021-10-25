@@ -10,9 +10,9 @@ groups:
       or
       (
        (
-        (month() %2 and (day_of_month() - day_of_week() > (30 + +month() % 2 - 7)) and day_of_week() > 0)
+        (month() %2 and (day_of_month() - day_of_week() > (31 + +month() % 2 - 7)) and day_of_week() > 0)
        or
-        -1*month()%2+1 and (day_of_month() - day_of_week() <= (30 + month() % 2 - 7))
+        -1*month()%2+1 and (day_of_month() - day_of_week() <= (31 + month() % 2 - 7))
        )
       )
       or
