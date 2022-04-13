@@ -9,11 +9,11 @@ groups:
       (vector(1) and (month() > 3 and month() < 10))
       or
       (
-       (
-        (month() %2 and (day_of_month() - day_of_week() > (31 + +month() % 2 - 7)) and day_of_week() > 0)
-       or
-        -1*month()%2+1 and (day_of_month() - day_of_week() <= (31 + month() % 2 - 7))
-       )
+      (
+       (month() %2 and (day_of_month() - day_of_week() > (31 + +month() % 2 - 7)) and day_of_week() > 0)
+      or
+       -1*month()%2+1 and (day_of_month() - day_of_week() <= (31 + month() % 2 - 7))
+      )
       )
       or
       (vector(1) and ((month()==10 and hour() < 1) or (month()==3 and hour() > 0)))
@@ -21,99 +21,131 @@ groups:
       vector(0)
   - record: belgium_localtime
     expr: |
-       time() + 3600 + 3600 * daylight_saving_time_belgium
+      time() + 3600 + 3600 * daylight_saving_time_belgium
   - record: business_day
     expr: |
-       vector(1) and day_of_week(belgium_localtime) > 0 and day_of_week(belgium_localtime) < 6 unless count(public_holiday)
+      vector(1) and day_of_week(belgium_localtime) > 0 and day_of_week(belgium_localtime) < 6 unless count(public_holiday)
+      or
+      vector(0)
   - record: belgium_hour
     expr: |
-       hour(belgium_localtime)
+      hour(belgium_localtime)
   - record: business_hour
     expr: |
-       vector(1) and belgium_hour >= 8 < 18 and business_day
+      vector(1) and belgium_hour >= 8 < 18 and business_day
+      or
+      vector(0)
   - record: extended_business_hour
     expr: |
-       (vector(1) and belgium_hour >= 7 < 20 and business_day)
+      (vector(1) and belgium_hour >= 7 < 20 and business_day)
+      or
+      vector(0)
   - record: extended_business_hour_sat
     expr: |
-       extended_business_hour
-       or (vector(1) and belgium_hour >= 7 < 14 and day_of_week(belgium_localtime) == 6 unless count(public_holiday))
+      extended_business_hour
+      or (vector(1) and belgium_hour >= 7 < 14 and day_of_week(belgium_localtime) == 6 unless count(public_holiday))
+      or
+      vector(0)
   - record: daylight
     expr: |
-       vector(1) and belgium_hour >= 8 < 18
+      vector(1) and belgium_hour >= 8 < 18
+      or
+      vector(0)
   - record: extended_daylight
     expr: |
-       vector(1) and belgium_hour >= 7 < 20
+      vector(1) and belgium_hour >= 7 < 20
+      or
+      vector(0)
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime-86400) == easter_day and month(belgium_localtime-86400) == easter_month
+      vector(1) and day_of_month(belgium_localtime-86400) == easter_day and month(belgium_localtime-86400) == easter_month
+      or
+      vector(0)
     labels:
-       name: Easter Monday
+      name: Easter Monday
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime-39*86400) == easter_day and month(belgium_localtime-39*86400) == easter_month
+      vector(1) and day_of_month(belgium_localtime-39*86400) == easter_day and month(belgium_localtime-39*86400) == easter_month
+      or
+      vector(0)
     labels:
-       name: Feast of the Ascension
+      name: Feast of the Ascension
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime-50*86400) == easter_day and month(belgium_localtime-50*86400) == easter_month
+      vector(1) and day_of_month(belgium_localtime-50*86400) == easter_day and month(belgium_localtime-50*86400) == easter_month
+      or
+      vector(0)
     labels:
-       name: Whit Monday
+      name: Whit Monday
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 1
+      vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 1
+      or
+      vector(0)
     labels:
-       name: New Year
+      name: New Year
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 5
+      vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 5
+      or
+      vector(0)
     labels:
-       name: Labour Day
+      name: Labour Day
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime) == 21 and month(belgium_localtime) == 7
+      vector(1) and day_of_month(belgium_localtime) == 21 and month(belgium_localtime) == 7
+      or
+      vector(0)
     labels:
-       name: Belgian National Day
+      name: Belgian National Day
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime) == 15 and month(belgium_localtime) == 8
+      vector(1) and day_of_month(belgium_localtime) == 15 and month(belgium_localtime) == 8
+      or
+      vector(0)
     labels:
-       name: Assumption of Mary
+      name: Assumption of Mary
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 11
+      vector(1) and day_of_month(belgium_localtime) == 1 and month(belgium_localtime) == 11
+      or
+      vector(0)
     labels:
-       name: All Saints Day
+      name: All Saints Day
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime) == 11 and month(belgium_localtime) == 11
+      vector(1) and day_of_month(belgium_localtime) == 11 and month(belgium_localtime) == 11
+      or
+      vector(0)
     labels:
-       name: Armistice of 11 November 1918
+      name: Armistice of 11 November 1918
   - record: public_holiday
     expr: |
-       vector(1) and day_of_month(belgium_localtime) == 25 and month(belgium_localtime) == 12
+      vector(1) and day_of_month(belgium_localtime) == 25 and month(belgium_localtime) == 12
+      or
+      vector(0)
     labels:
-       name: Xmas
+      name: Xmas
   - alert: Time Window - Night
     expr: absent(daylight)
     labels:
-        recipient: none
+       recipient: none
   - alert: Time Window - OBH
     expr: absent(business_hour)
     labels:
-        recipient: none
+       recipient: none
   - alert: Time Window - Extended Night
     expr: absent(extended_daylight)
     labels:
-        recipient: none
+       recipient: none
   - alert: Time Window - Extended OBH with Saturday
     expr: absent(extended_business_hour_sat)
     labels:
-        recipient: none
+       recipient: none
   - alert: Time Window - Extended OBH
     expr: absent(extended_business_hour)
     labels:
-        recipient: none
+       recipient: none
 - name: Easter Meeus/Jones/Butcher Algorithm
   interval: 60s
   rules:
